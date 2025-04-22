@@ -54,7 +54,6 @@ if __name__ == '__main__':
                                          cb=movement.param_deck_flow)
         time.sleep(1)
         with MotionCommander(scf, default_height=DEFAULT_HEIGHT) as mc:
-            START_SIZE = 0
             origin_box = None
             bounding_box = None
             while (1):
@@ -75,8 +74,8 @@ if __name__ == '__main__':
                     # calculate direction and magnitude of expected movement based
                     # on origin box and bounding box
                     drone_should_move_this_direction = movement.calculate_movement(
-                        ai_deck_img, origin_box, bounding_box, START_SIZE)
+                        ai_deck_img, origin_box, bounding_box)
                     print(drone_should_move_this_direction)
 
-                    # now move the drone
+                    # now move the drone in the outputted direction & magnitude
                     movement.move(mc, drone_should_move_this_direction, 0.01)

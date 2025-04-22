@@ -131,7 +131,12 @@ def land(mc):
     mc.stop()
 
 
-def calculate_movement(image, origin_box, bounding_box, START_SIZE):
+def calculate_movement(image, origin_box, bounding_box):
+    """
+    Control algorithm for the drone position based on given origin box and current 
+    bounding box of object. Outputs a movement direction and magnitude.
+    """
+
     MARGIN = 200
 
     # determine which direction to display
@@ -174,19 +179,23 @@ def calculate_movement(image, origin_box, bounding_box, START_SIZE):
     return dir_text
 
 
-def move(mc, direction, amt):
+def move(mc, direction, magnitude):
+    """
+    Function that actually moves the drone in the given direction with the given magnitude.
+    """
+
     if direction == 'up':  # up
-        up(mc, amt)
+        up(mc, magnitude)
     elif direction == 'down':  # down
-        down(mc, amt)
+        down(mc, magnitude)
     elif direction == 'front':  # forward
-        backward(mc, amt)
+        backward(mc, magnitude)
     elif direction == 'back':  # backward
-        forward(mc, amt)
+        forward(mc, magnitude)
     elif direction == 'left':     # turn left
-        left(mc, amt)
+        left(mc, magnitude)
     elif direction == 'right':     # turn right
-        right(mc, amt)
+        right(mc, magnitude)
 
 
 def param_deck_flow(_, value_str):
