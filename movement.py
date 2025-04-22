@@ -135,6 +135,8 @@ def calculate_movement(image, origin_box, bounding_box):
     """
     Control algorithm for the drone position based on given origin box and current 
     bounding box of object. Outputs a movement direction and magnitude.
+
+    TODO: utilize origin_box instead of START_SIZE to calculate error in control algo
     """
 
     MARGIN = 200
