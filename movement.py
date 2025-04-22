@@ -12,6 +12,8 @@ from cflib.crazyflie.syncLogger import SyncLogger
 
 from cflib.positioning.motion_commander import MotionCommander
 
+import cv2
+
 URI = [
     "",
     "radio://0/80/2M/E7E7E7E701",
@@ -127,6 +129,49 @@ def land(mc):
     # Parameters:
     #       mc: motion commander
     mc.stop()
+
+
+def calculate_movement(image, origin_box, bounding_box, START_SIZE):
+    MARGIN = 200
+
+    # determine which direction to display
+    dir_text = ""
+    if abs(bounding_box.rel_x) > abs(bounding_box.rel_y):
+        dir_text = "right" if bounding_box.rel_x > 0 else "left"
+    else:
+        dir_text = "down" if bounding_box.rel_y > 0 else "up"
+
+    if bounding_box.w < START_SIZE - MARGIN and bounding_box.h < START_SIZE - MARGIN:
+        dir_text = "back"
+    elif bounding_box.w > START_SIZE + MARGIN and bounding_box.h > START_SIZE + MARGIN:
+        dir_text = "front"
+
+    # draw an X at the center
+    size = 10
+    thickness = 3
+    cv2.line(image, (bounding_box.center_x - size, bounding_box.center_y - size),
+             (bounding_box.center_x + size, bounding_box.center_y + size), (0, 255, 255), thickness)
+    cv2.line(image, (bounding_box.center_x - size, bounding_box.center_y + size),
+             (bounding_box.center_x + size, bounding_box.center_y - size), (0, 255, 255), thickness)
+
+    # add direction text to bottom right
+    text = dir_text
+    text_size = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2)[0]
+    text_x = image.shape[1] - text_size[0] - 10
+    text_y = image.shape[0] - 20
+
+    # add white bg for text
+    cv2.rectangle(image,
+                  (text_x - 5, text_y - text_size[1] - 5),
+                  (text_x + text_size[0] + 5, text_y + 5),
+                  (255, 255, 255),
+                  -1)
+
+    # add text
+    cv2.putText(image, text, (text_x, text_y),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2)
+
+    return dir_text
 
 
 def move(mc, direction, amt):

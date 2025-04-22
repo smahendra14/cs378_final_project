@@ -1,8 +1,6 @@
 import cv2
 import numpy as np
 
-MARGIN = 200
-
 
 class BoundingBox:
     def __init__(self, w, h, center_x, center_y, rel_x, rel_y):
@@ -61,44 +59,3 @@ def get_bounding_box(image):
         rel_y = center_y - img_center_y
 
     return BoundingBox(w, h, center_x, center_y, rel_x, rel_y)
-
-
-def move_based_on_balls(image, box, START_SIZE):
-    # determine which direction to display
-    dir_text = ""
-    if abs(box.rel_x) > abs(box.rel_y):
-        dir_text = "right" if box.rel_x > 0 else "left"
-    else:
-        dir_text = "down" if box.rel_y > 0 else "up"
-
-    if box.w < START_SIZE - MARGIN and box.h < START_SIZE - MARGIN:
-        dir_text = "back"
-    elif box.w > START_SIZE + MARGIN and box.h > START_SIZE + MARGIN:
-        dir_text = "front"
-
-    # draw an X at the center
-    size = 10
-    thickness = 3
-    cv2.line(image, (box.center_x - size, box.center_y - size),
-             (box.center_x + size, box.center_y + size), (0, 255, 255), thickness)
-    cv2.line(image, (box.center_x - size, box.center_y + size),
-             (box.center_x + size, box.center_y - size), (0, 255, 255), thickness)
-
-    # add direction text to bottom right
-    text = dir_text
-    text_size = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2)[0]
-    text_x = image.shape[1] - text_size[0] - 10
-    text_y = image.shape[0] - 20
-
-    # add white bg for text
-    cv2.rectangle(image,
-                  (text_x - 5, text_y - text_size[1] - 5),
-                  (text_x + text_size[0] + 5, text_y + 5),
-                  (255, 255, 255),
-                  -1)
-
-    # add text
-    cv2.putText(image, text, (text_x, text_y),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2)
-
-    return dir_text
