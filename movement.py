@@ -135,9 +135,9 @@ def move(mc, direction, amt):
     elif direction == 'down':  # down
         down(mc, amt)
     elif direction == 'front':  # forward
-        forward(mc, amt)
-    elif direction == 'back':  # backward
         backward(mc, amt)
+    elif direction == 'back':  # backward
+        forward(mc, amt)
     elif direction == 'left':     # turn left
         left(mc, amt)
     elif direction == 'right':     # turn right
