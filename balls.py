@@ -3,17 +3,17 @@ import numpy as np
 
 
 class BoundingBox:
-    def __init__(self, w, h, center_x, center_y, rel_x, rel_y):
+    def __init__(self, w, h, center_x, center_y):
         self.w = w
         self.h = h
         self.center_x = center_x
         self.center_y = center_y
-        self.rel_x = rel_x
-        self.rel_y = rel_y
+
+    def __sub__(self, other):
+        pass
 
     def __str__(self):
-        return (f"w: {self.w}, h: {self.h}, center_x: {self.center_x}, center_y: {self.center_y}, "
-                "rel_x: {self.rel_x}, rel_y: {self.rel_y}")
+        return (f"w: {self.w}, h: {self.h}, center_x: {self.center_x}, center_y: {self.center_y}")
 
 
 def get_bounding_box(image):
@@ -58,4 +58,4 @@ def get_bounding_box(image):
         rel_x = center_x - img_center_x
         rel_y = center_y - img_center_y
 
-    return BoundingBox(w, h, center_x, center_y, rel_x, rel_y)
+    return BoundingBox(w, h, center_x, center_y)

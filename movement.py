@@ -131,7 +131,7 @@ def land(mc):
     mc.stop()
 
 
-def calculate_movement(image, origin_box, bounding_box):
+def calculate_movement(image, origin_box, current_box):
     """
     Control algorithm for the drone position based on given origin box and current 
     bounding box of object. Outputs a movement direction and magnitude.
@@ -143,23 +143,23 @@ def calculate_movement(image, origin_box, bounding_box):
 
     # determine which direction to display
     dir_text = ""
-    if abs(bounding_box.rel_x) > abs(bounding_box.rel_y):
-        dir_text = "right" if bounding_box.rel_x > 0 else "left"
+    if abs(current_box.rel_x) > abs(current_box.rel_y):
+        dir_text = "right" if current_box.rel_x > 0 else "left"
     else:
-        dir_text = "down" if bounding_box.rel_y > 0 else "up"
+        dir_text = "down" if current_box.rel_y > 0 else "up"
 
-    if bounding_box.w < START_SIZE - MARGIN and bounding_box.h < START_SIZE - MARGIN:
+    if current_box.w < START_SIZE - MARGIN and current_box.h < START_SIZE - MARGIN:
         dir_text = "back"
-    elif bounding_box.w > START_SIZE + MARGIN and bounding_box.h > START_SIZE + MARGIN:
+    elif current_box.w > START_SIZE + MARGIN and current_box.h > START_SIZE + MARGIN:
         dir_text = "front"
 
     # draw an X at the center
     size = 10
     thickness = 3
-    cv2.line(image, (bounding_box.center_x - size, bounding_box.center_y - size),
-             (bounding_box.center_x + size, bounding_box.center_y + size), (0, 255, 255), thickness)
-    cv2.line(image, (bounding_box.center_x - size, bounding_box.center_y + size),
-             (bounding_box.center_x + size, bounding_box.center_y - size), (0, 255, 255), thickness)
+    cv2.line(image, (current_box.center_x - size, current_box.center_y - size),
+             (current_box.center_x + size, current_box.center_y + size), (0, 255, 255), thickness)
+    cv2.line(image, (current_box.center_x - size, current_box.center_y + size),
+             (current_box.center_x + size, current_box.center_y - size), (0, 255, 255), thickness)
 
     # add direction text to bottom right
     text = dir_text

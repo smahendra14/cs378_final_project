@@ -25,7 +25,7 @@ URI = [
 ]
 
 # URI to the Crazyflie to connect to
-uri = URI[7]  # TODO: change the uri based on your crazyflie number
+uri = URI[1]  # TODO: change the uri based on your crazyflie number
 '''
 1: radio://0/80/2M/E7E7E7E701
 2: radio://0/80/2M/E7E7E7E702
@@ -55,8 +55,8 @@ if __name__ == '__main__':
         time.sleep(1)
         with MotionCommander(scf, default_height=DEFAULT_HEIGHT) as mc:
             origin_box = None
-            bounding_box = None
-            while (1):
+            current_box = None
+            while True:
                 ai_deck_img = ai_deck.get_img()
                 print("got img from ai deck")
 
@@ -67,14 +67,15 @@ if __name__ == '__main__':
                     print(f"updated bounding box: {origin_box}")
                 elif key_pressed == ord('l'):  # Check if 'l' is pressed
                     # land the drone and break loop
-                    movement.land()
+                    print("initiating land...")
+                    movement.land(mc)
                     break
 
-                if origin_box is not None and bounding_box is not None:
+                if origin_box is not None and current_box is not None:
                     # calculate direction and magnitude of expected movement based
                     # on origin box and bounding box
                     drone_should_move_this_direction = movement.calculate_movement(
-                        ai_deck_img, origin_box, bounding_box)
+                        ai_deck_img, origin_box, current_box)
                     print(drone_should_move_this_direction)
 
                     # now move the drone in the outputted direction & magnitude
