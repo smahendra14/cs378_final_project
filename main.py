@@ -1,13 +1,13 @@
-# import cflib.crtp
-# from cflib.crazyflie import Crazyflie
-# from cflib.crazyflie.syncCrazyflie import SyncCrazyflie
-# from cflib.crazyflie.log import LogConfig
-# from cflib.positioning.motion_commander import MotionCommander
+import cflib.crtp
+from cflib.crazyflie import Crazyflie
+from cflib.crazyflie.syncCrazyflie import SyncCrazyflie
+from cflib.crazyflie.log import LogConfig
+from cflib.positioning.motion_commander import MotionCommander
 
-# import time
+import time
 import movement
 import balls
-# import ai_deck
+import ai_deck
 import cv2
 
 
@@ -39,58 +39,50 @@ uri = URI[1]  # TODO: change the uri based on your crazyflie number
 '''
 
 if __name__ == '__main__':
-    # cflib.crtp.init_drivers()
+    cflib.crtp.init_drivers()
 
-    # lg_stab = LogConfig(name='Stabilizer', period_in_ms=10)
-    # lg_stab.add_variable('stabilizer.roll', 'float')
-    # lg_stab.add_variable('stabilizer.pitch', 'float')
-    # lg_stab.add_variable('stabilizer.yaw', 'float')
+    lg_stab = LogConfig(name='Stabilizer', period_in_ms=10)
+    lg_stab.add_variable('stabilizer.roll', 'float')
+    lg_stab.add_variable('stabilizer.pitch', 'float')
+    lg_stab.add_variable('stabilizer.yaw', 'float')
 
-    # DEFAULT_HEIGHT = 0.5
+    DEFAULT_HEIGHT = 0.5
 
-    # mc = None
-    # with SyncCrazyflie(uri, cf=Crazyflie(rw_cache='./cache')) as scf:
-    #     scf.cf.param.add_update_callback(group="deck", name="bcLighthouse4",
-    #                                      cb=movement.param_deck_flow)
-    #     time.sleep(1)
-    #     with MotionCommander(scf, default_height=DEFAULT_HEIGHT) as mc:
+    mc = None
+    with SyncCrazyflie(uri, cf=Crazyflie(rw_cache='./cache')) as scf:
+        scf.cf.param.add_update_callback(group="deck", name="bcLighthouse4",
+                                         cb=movement.param_deck_flow)
+        time.sleep(1)
+        with MotionCommander(scf, default_height=DEFAULT_HEIGHT) as mc:
             origin_box = None
             current_box = None
-            cap = cv2.VideoCapture(1)
             while True:
-                # ai_deck_img = ai_deck.get_img()
-                # print("got img from ai deck")
+                ai_deck_img = ai_deck.get_img()
+                print("got img from ai deck")
 
-                ret, ai_deck_img = cap.read()
                 key_pressed = cv2.waitKey(1) & 0xFF
                 if key_pressed == ord(' '):  # Check if space bar is pressed
                     # update origin box on space bar press
                     origin_box = balls.calibrate_origin_box(ai_deck_img)
                     print(f"calibrated origin box: {origin_box}")
-                # elif key_pressed == ord('l'):  # Check if 'l' is pressed
-                #     # land the drone and break loop
-                #     print("initiating land...")
-                #     movement.land(mc)
-                #     break
-
-                if not ret:
-                    print("failed to grab frame")
+                elif key_pressed == ord('l'):  # Check if 'l' is pressed
+                    # land the drone and break loop
+                    print("initiating land...")
+                    movement.land(mc)
                     break
 
                 if origin_box is not None: 
                     # get the current bounding box
                     current_box = balls.get_bounding_box(ai_deck_img)
-                    # print(f"got current bounding box: {current_box}")
+                    print(f"got current bounding box: {current_box}")
 
                     # calculate direction and magnitude of expected movement based
                     # on origin box and bounding box
                     drone_should_move_this_direction = movement.calculate_movement(
                         ai_deck_img, origin_box, current_box)
-                    # print(f"drone moving {drone_should_move_this_direction}...")
+                    print(f"drone moving {drone_should_move_this_direction}...")
 
-                    # # now move the drone in the outputted direction & magnitude
-                    # movement.move(mc, drone_should_move_this_direction, 0.01)
+                    # now move the drone in the outputted direction & magnitude
+                    movement.move(mc, drone_should_move_this_direction, 0.01)
 
                 cv2.imshow("camera feed", ai_deck_img)
-            cap.release()
-            cv2.destroyAllWindows()
