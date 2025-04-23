@@ -13,6 +13,7 @@ from cflib.crazyflie.syncLogger import SyncLogger
 from cflib.positioning.motion_commander import MotionCommander
 
 import cv2
+import balls
 
 URI = [
     "",
@@ -139,29 +140,24 @@ def calculate_movement(image, origin_box, current_box):
     TODO: utilize origin_box instead of START_SIZE to calculate error in control algo
     """
 
-    MARGIN = 200
+    # adjust for sensitivity to forward & backward movement of target
+    MARGIN = 100
 
     # determine which direction to display
     dir_text = ""
-    if abs(current_box.rel_x) > abs(current_box.rel_y):
-        dir_text = "right" if current_box.rel_x > 0 else "left"
+    diff: balls.BoundingBoxDelta = current_box - origin_box
+    print(diff)
+    if abs(diff.dcenter_x) > abs(diff.dcenter_y):
+        dir_text = "right" if diff.dcenter_x > 0 else "left"
     else:
-        dir_text = "down" if current_box.rel_y > 0 else "up"
+        dir_text = "down" if diff.dcenter_y > 0 else "up"
 
-    if current_box.w < START_SIZE - MARGIN and current_box.h < START_SIZE - MARGIN:
-        dir_text = "back"
-    elif current_box.w > START_SIZE + MARGIN and current_box.h > START_SIZE + MARGIN:
-        dir_text = "front"
+    if diff.dh > MARGIN and diff.dw > MARGIN:
+        dir_text = "backward"
+    elif diff.dh < -MARGIN and diff.dw < -MARGIN:
+        dir_text = "forward"
 
-    # draw an X at the center
-    size = 10
-    thickness = 3
-    cv2.line(image, (current_box.center_x - size, current_box.center_y - size),
-             (current_box.center_x + size, current_box.center_y + size), (0, 255, 255), thickness)
-    cv2.line(image, (current_box.center_x - size, current_box.center_y + size),
-             (current_box.center_x + size, current_box.center_y - size), (0, 255, 255), thickness)
-
-    # add direction text to bottom right
+    # add direction text to bottom right of the camera feed
     text = dir_text
     text_size = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2)[0]
     text_x = image.shape[1] - text_size[0] - 10
@@ -190,10 +186,10 @@ def move(mc, direction, magnitude):
         up(mc, magnitude)
     elif direction == 'down':  # down
         down(mc, magnitude)
-    elif direction == 'front':  # forward
-        backward(mc, magnitude)
-    elif direction == 'back':  # backward
+    elif direction == 'forward':  # forward
         forward(mc, magnitude)
+    elif direction == 'backward':  # backward
+        backward(mc, magnitude)
     elif direction == 'left':     # turn left
         left(mc, magnitude)
     elif direction == 'right':     # turn right
