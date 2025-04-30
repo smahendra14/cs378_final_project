@@ -80,13 +80,8 @@ def rx_bytes(size):
 # count = 0
 
 def get_img():
-    # First get the info
     packetInfoRaw = rx_bytes(4)
-    # print(packetInfoRaw)
     [length, routing, function] = struct.unpack('<HBB', packetInfoRaw)
-    # print("Length is {}".format(length))
-    # print("Route is 0x{:02X}->0x{:02X}".format(routing & 0xF, routing >> 4))
-    # print("Function is 0x{:02X}".format(function))
 
     imgHeader = rx_bytes(length - 2)
     # print(imgHeader)
@@ -95,18 +90,12 @@ def get_img():
         size] = struct.unpack('<BHHBBI', imgHeader)
 
     if magic == 0xBC:
-        # print("Magic is good")
-        # print("Resolution is {}x{} with depth of {} byte(s)".format(width, height, depth))
-        # print("Image format is {}".format(format))
-        # print("Image size is {} bytes".format(size))
-
         # Now we start rx the image, this will be split up in packages of some size
         imgStream = bytearray()
 
         while len(imgStream) < size:
             packetInfoRaw = rx_bytes(4)
             [length, dst, src] = struct.unpack('<HBB', packetInfoRaw)
-            # print("Chunk size is {} ({:02X}->{:02X})".format(length, src, dst))
             chunk = rx_bytes(length - 2)
             imgStream.extend(chunk)
 
@@ -118,14 +107,7 @@ def get_img():
         if format == 0:
             bayer_img = np.frombuffer(imgStream, dtype=np.uint8)
             bayer_img.shape = (244, 324)
-            color_img = cv2.cvtColor(bayer_img, cv2.COLOR_BayerBG2BGRA)
-            # cv2.imshow('Raw', bayer_img)
-            # cv2.imshow('Color', color_img)
-            # if args.save:
-                # cv2.imwrite(f"stream_out/raw/img_{count:06d}.png", bayer_img)
-                # cv2.imwrite(
-                #     f"stream_out/debayer/img_{count:06d}.png", color_img)
-            # cv2.waitKey(1)
+            color_img = cv2.cvtColor(bayer_img, cv2.COLOR_BayerBG2BGR)
             return color_img 
         else:
             with open("img.jpeg", "wb") as f:

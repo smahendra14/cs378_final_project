@@ -45,12 +45,12 @@ def calibrate_origin_box(image):
 
     # create masks
     mask1 = cv2.inRange(hsv, lower_red1, upper_red1)
-    mask2 = cv2.inRange(hsv, lower_red2, upper_red2)
-    mask = cv2.add(mask1, mask2)
+    # mask2 = cv2.inRange(hsv, lower_red2, upper_red2)
+    # mask = cv2.add(mask1)
 
     # determine contours
     contours, _ = cv2.findContours(
-        mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        mask1, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     if contours:
         # find the largest contour for the red circle
@@ -59,6 +59,8 @@ def calibrate_origin_box(image):
         # get bounding box coordinates
         _, _, w, h = cv2.boundingRect(largest_contour)
         print(f"width is {w}, height is {h}")
+    else:
+        return None
 
     origin_x = image.shape[1] // 2
     origin_y = image.shape[0] // 2
@@ -78,13 +80,15 @@ def get_bounding_box(image):
 
     # create masks
     mask1 = cv2.inRange(hsv, lower_red1, upper_red1)
-    mask2 = cv2.inRange(hsv, lower_red2, upper_red2)
-    mask = cv2.add(mask1, mask2)
+    # mask2 = cv2.inRange(hsv, lower_red2, upper_red2)
+    # mask = cv2.add(mask1, mask2)
 
     # determine contours
     contours, _ = cv2.findContours(
-        mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        mask1, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
+    center_x = None
+    center_y = None
     if contours:
         # find the largest contour for the red circle
         largest_contour = max(contours, key=cv2.contourArea)
@@ -100,12 +104,14 @@ def get_bounding_box(image):
         center_x = x + w // 2
         center_y = y + h // 2
 
-    # draw an X at the center
-    size = 10
-    thickness = 3
-    cv2.line(image, (center_x - size, center_y - size),
-             (center_x + size, center_y + size), (0, 255, 255), thickness)
-    cv2.line(image, (center_x - size, center_y + size),
-             (center_x + size, center_y - size), (0, 255, 255), thickness)
+        # draw an X at the center
+        size = 10
+        thickness = 3
+        cv2.line(image, (center_x - size, center_y - size),
+                (center_x + size, center_y + size), (0, 255, 255), thickness)
+        cv2.line(image, (center_x - size, center_y + size),
+                (center_x + size, center_y - size), (0, 255, 255), thickness)
+    else:
+        return None
 
     return BoundingBox("current_box", w, h, center_x, center_y)

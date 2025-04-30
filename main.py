@@ -56,33 +56,45 @@ if __name__ == '__main__':
         with MotionCommander(scf, default_height=DEFAULT_HEIGHT) as mc:
             origin_box = None
             current_box = None
+            got_origin_box = False
             while True:
                 ai_deck_img = ai_deck.get_img()
-                print("got img from ai deck")
+                # print("got img from ai deck")
+
+                if not got_origin_box:
+                    origin_box = balls.calibrate_origin_box(ai_deck_img)
+                    
+                if origin_box is None:
+                    continue
+                else:
+                    got_origin_box = True
+                    # print(origin_box)
 
                 key_pressed = cv2.waitKey(1) & 0xFF
-                if key_pressed == ord(' '):  # Check if space bar is pressed
-                    # update origin box on space bar press
-                    origin_box = balls.calibrate_origin_box(ai_deck_img)
-                    print(f"calibrated origin box: {origin_box}")
-                elif key_pressed == ord('l'):  # Check if 'l' is pressed
+                # if key_pressed == ord(' '):  # Check if space bar is pressed
+                #     # update origin box on space bar press
+                #     origin_box = balls.calibrate_origin_box(ai_deck_img)
+                #     # print(f"calibrated origin box: {origin_box}")
+                if key_pressed == ord('l'):  # Check if 'l' is pressed
                     # land the drone and break loop
-                    print("initiating land...")
+                    # print("initiating land...")
                     movement.land(mc)
                     break
 
-                if origin_box is not None: 
-                    # get the current bounding box
-                    current_box = balls.get_bounding_box(ai_deck_img)
-                    print(f"got current bounding box: {current_box}")
+                # if origin_box is not None: 
+                # get the current bounding box
+                current_box = balls.get_bounding_box(ai_deck_img)
+                # print(f"got current bounding box: {current_box}")
 
-                    # calculate direction and magnitude of expected movement based
-                    # on origin box and bounding box
-                    drone_should_move_this_direction = movement.calculate_movement(
-                        ai_deck_img, origin_box, current_box)
-                    print(f"drone moving {drone_should_move_this_direction}...")
+                if origin_box is None or current_box is None:
+                    continue
 
-                    # now move the drone in the outputted direction & magnitude
-                    movement.move(mc, drone_should_move_this_direction, 0.01)
+                # calculate direction and magnitude of expected movement based
+                # on origin box and bounding box
+                drone_should_move_this_direction = movement.calculate_movement(
+                    ai_deck_img, origin_box, current_box)
+
+                # now move the drone in the outputted direction & magnitude
+                movement.move(mc, drone_should_move_this_direction, 0.02)
 
                 cv2.imshow("camera feed", ai_deck_img)
